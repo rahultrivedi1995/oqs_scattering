@@ -1,0 +1,5 @@
+__pycache__/*
+*.swp
+*.swo
+*.npy
+.ipynb_checkpoints/*
