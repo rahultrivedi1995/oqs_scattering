@@ -1,5 +1,6 @@
 import abc
 import numpy as np
+import bisect
 
 from typing import List
 
@@ -63,7 +64,24 @@ class MultiSinusoidalPulse(Pulse):
                        amp, harm, phase in zip(self._amps,
                                                self._harmonics,
                                                self._phases)])
+    
+    
+class ArbPulseConst(Pulse):
+    """Implements a modulation that arbitrary in time (piecewise constant)."""
+    def __init__(self,
+                 times: List[float],
+                 amps: List[float]) -> None:
+        self._times = times
+        self._amps = amps
 
+    @property
+    def period(self) -> float:
+        return None
+
+    def __call__(self, t: float) -> float:
+        return self._amps[bisect.bisect_left(self._times, t)-1]
+
+    
 class ComplexExpPulse(Pulse):
     """Implements a complex exponential modulation."""
     def __init__(self,
