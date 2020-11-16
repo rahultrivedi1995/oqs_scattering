@@ -8,11 +8,6 @@ from typing import Tuple
 
 class ModulatedQuantumSystem(metaclass=abc.ABCMeta):
     """Interface for a modulated open quantum system."""
-    @property
-    @abc.abstractmethod
-    def period(self) -> float:
-        """Returns the period of the modulated system."""
-        raise NotImplementedError()
 
     @abc.abstractmethod
     def subspace_dim(self, num_ex: int) -> int:
@@ -39,6 +34,21 @@ class ModulatedQuantumSystem(metaclass=abc.ABCMeta):
             The decay operator as a numpy array.
         """
         raise NotImplementedError()
+
+    @abc.abstractmethod
+    def compute_ex_op(self, num_ex: int) -> np.ndarray:
+        """Computes the excitation operator for the quantum system.
+
+        Args:
+            num_ex: The number of excitations to consider. Note that the
+                operator constructed here maps the subspace with `num_ex - 1`
+                to `num_ex`.
+
+        Returns:
+            The excitation operator as a numpy array.
+        """
+        raise NotImplementedError()
+
 
     @abc.abstractmethod
     def compute_hamiltonian(self, t: float, num_ex: int) -> np.ndarray:

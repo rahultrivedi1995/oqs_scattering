@@ -74,16 +74,19 @@ class FloquetAnalyzer:
     def __init__(
             self,
             system: mqs.ModulatedQuantumSystem,
+            period: float,
             num_floquet_bands: int) -> None:
         """Creates a new `FloquetAnalyzer` object.
 
         Args:
             system: The system under consideration.
+            period: The period of the Hamiltonian of the system.
             num_floquet_bands: The number of floquet bands to use for the
                 analysis.
         """
         self._system = system
         self._num_floquet_bands = num_floquet_bands
+        self._period = period
 
         # Setup the cache for the eigenvectors and eigenvalues. We use a simple
         # dictionary that has as keys the number of excitations being use. Each
@@ -105,6 +108,11 @@ class FloquetAnalyzer:
         self._cache_tol = 1e-5
 
     @property
+    def period(self) -> float:
+        """The period of the Hamiltonian."""
+        return self._period
+
+    @property
     def num_floquet_bands(self) -> int:
         """Number of floquet bands used for the simulation."""
         return self._num_floquet_bands
@@ -117,7 +125,7 @@ class FloquetAnalyzer:
     @property
     def dt(self) -> int:
         """Returns the mesh size for coarse graining the time axis."""
-        return self._system.period / self.num_dt
+        return self._period / self.num_dt
 
     @property
     def system(self) -> mqs.ModulatedQuantumSystem:
@@ -141,7 +149,7 @@ class FloquetAnalyzer:
             eigvals, eigvecs = compute_floquet_states(
                     functools.partial(self._system.compute_hamiltonian,
                                       num_ex=num_ex),
-                    period=self._system.period,
+                    period=self.period,
                     num_dt=self.num_dt)
             # Calculate the inverse of the eigenvectors.
             eigvecs_inv = np.array([np.linalg.inv(e) for e in eigvecs])
@@ -177,7 +185,7 @@ class FloquetAnalyzer:
             else:
                 mat_right = np.array([[1]])
             # Calculate the decay operator.
-            ex_op = self._system.compute_decay_op(num_ex).T.conj()
+            ex_op = self._system.compute_ex_op(num_ex)
             self._ex_ops[num_ex] = mat_left @ ex_op @ mat_right
 
         return self._ex_ops[num_ex]
@@ -200,7 +208,7 @@ class FloquetAnalyzer:
         # Multiply the above vector with the convolving lorentzian.
         harms = (np.arange(-self._num_floquet_bands,
                            self._num_floquet_bands + 1)
-                ) * (2 * np.pi / self._system.period)
+                ) * (2 * np.pi / self.period)
         eigvals, _, _ = self.floquet_decomposition(num_ex)
         lor = 1 / (1.0j * harms[np.newaxis, :, np.newaxis] +
                    1.0j * eigvals[np.newaxis, np.newaxis, :] -

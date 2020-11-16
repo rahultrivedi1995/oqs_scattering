@@ -5,11 +5,6 @@ from typing import List
 
 
 class Pulse(metaclass=abc.ABCMeta):
-    @property
-    @abc.abstractmethod
-    def period(self) -> float:
-        raise NotImplementedError()
-
     @abc.abstractmethod
     def __call__(self, t: float) -> float:
         raise NotImplementedError()
